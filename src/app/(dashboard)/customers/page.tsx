@@ -1,565 +1,381 @@
-"use client";
-import { useEffect, useState } from "react";
-import { Eye, Edit, Search, ChevronDown } from "lucide-react";
-import AddCustomerModal from "../../../components/AddCustomerModal";
-import { useRouter } from "next/navigation";
-import {
-  FormControl,
-  Select,
-  MenuItem,
-  SelectChangeEvent,
-} from "@mui/material";
-import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
-import { useAllCustomersQuery } from "../../../redux/api/customerApi";
+'use client';
+import React, { useState, useEffect } from 'react';
+import { Search, Eye, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 interface Customer {
   id: number;
-  customer_id: number;
   name: string;
   phone: string;
-  created_at: string;
-  status: "Active" | "Suspended" | "Pending";
+  dateJoined: string;
+  status: "Active" | "Inactive";
   address: string;
   bottlesAtHome: string;
   paymentPending: number;
-  house?: string;
-  block?: string;
-  colony?: string;
-  dateJoined?: string;
 }
 
-interface CustomerFormData {
-  name: string;
-  phone: string;
-  address?: string;
-}
-
-
-
-// ✅ Confirm Modal
-const ConfirmModal = ({
-  isOpen,
-  onClose,
-  onConfirm,
-  title,
-  message,
-  confirmText,
-  confirmColor = "red",
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-  onConfirm: () => void;
-  title: string;
-  message: string;
-  confirmText: string;
-  confirmColor?: "red" | "green" | "blue";
-}) => {
-  if (!isOpen) return null;
-  return (
-    <div className="fixed inset-0 flex items-center backdrop-blur-sm z-50 transition-all duration-300 justify-center bg-black/40">
-      <div className="bg-white rounded-lg shadow-lg p-6 w-80">
-        <h2 className="text-lg font-semibold mb-4 text-gray-800">{title}</h2>
-        <p className="text-sm text-gray-600 mb-6">{message}</p>
-        <div className="flex justify-end gap-3">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 text-sm rounded-md border border-gray-300 text-gray-600 hover:bg-gray-100"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={() => {
-              onConfirm();
-              onClose();
-            }}
-            className={`px-4 py-2 text-sm rounded-md text-white ${
-              confirmColor === "red"
-                ? "bg-red-600 hover:bg-red-700"
-                : confirmColor === "green"
-                ? "bg-green-600 hover:bg-green-700"
-                : "bg-blue-600 hover:bg-blue-700"
-            }`}
-          >
-            {confirmText}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
+const sampleCustomers: Customer[] = [
+  {
+    id: 1,
+    name: "Ali Khan",
+    phone: "0300-1234567",
+    dateJoined: "2024-08-01",
+    status: "Active",
+    address: "H12, St 5, Gulshan, Block A",
+    bottlesAtHome: "2 Blue / 1 White",
+    paymentPending: 500,
+  },
+  {
+    id: 2,
+    name: "Sara Ahmed",
+    phone: "0312-9876543",
+    dateJoined: "2024-07-15",
+    status: "Inactive",
+    address: "22, 10th Ave, Model Town",
+    bottlesAtHome: "0 Blue / 3 White",
+    paymentPending: 1200,
+  },
+  {
+    id: 3,
+    name: "Ahmed Hassan",
+    phone: "0321-1111111",
+    dateJoined: "2024-06-20",
+    status: "Active",
+    address: "Block B, House 45, DHA Phase 2",
+    bottlesAtHome: "3 Blue / 2 White",
+    paymentPending: 800,
+  },
+  {
+    id: 4,
+    name: "Fatima Khan",
+    phone: "0333-2222222",
+    dateJoined: "2024-09-10",
+    status: "Active",
+    address: "Street 12, Model Town, Block C",
+    bottlesAtHome: "1 Blue / 1 White",
+    paymentPending: 450,
+  },
+  {
+    id: 5,
+    name: "Omar Sheikh",
+    phone: "0345-3333333",
+    dateJoined: "2024-05-15",
+    status: "Inactive",
+    address: "House 67, Ali Garden, Block D",
+    bottlesAtHome: "4 Blue / 0 White",
+    paymentPending: 1500,
+  },
+  {
+    id: 6,
+    name: "Zainab Ali",
+    phone: "0301-4444444",
+    dateJoined: "2024-04-22",
+    status: "Active",
+    address: "House 89, Johar Town, Block E",
+    bottlesAtHome: "2 Blue / 2 White",
+    paymentPending: 650,
+  },
+  {
+    id: 7,
+    name: "Hassan Sheikh",
+    phone: "0315-5555555",
+    dateJoined: "2024-03-18",
+    status: "Active",
+    address: "Flat 23, Green City, Block F",
+    bottlesAtHome: "1 Blue / 3 White",
+    paymentPending: 900,
+  },
+  {
+    id: 8,
+    name: "Aisha Khan",
+    phone: "0322-6666666",
+    dateJoined: "2024-02-14",
+    status: "Inactive",
+    address: "House 56, Canal View, Block G",
+    bottlesAtHome: "0 Blue / 1 White",
+    paymentPending: 300,
+  },
+  {
+    id: 9,
+    name: "Muhammad Ali",
+    phone: "0334-7777777",
+    dateJoined: "2024-01-10",
+    status: "Active",
+    address: "Street 34, Liberty, Block H",
+    bottlesAtHome: "3 Blue / 1 White",
+    paymentPending: 750,
+  },
+  {
+    id: 10,
+    name: "Khadija Ahmed",
+    phone: "0346-8888888",
+    dateJoined: "2023-12-25",
+    status: "Active",
+    address: "House 78, Garden Town, Block I",
+    bottlesAtHome: "2 Blue / 2 White",
+    paymentPending: 1100,
+  },
+  {
+    id: 11,
+    name: "Usman Malik",
+    phone: "0302-9999999",
+    dateJoined: "2023-11-30",
+    status: "Inactive",
+    address: "Flat 12, Defense, Block J",
+    bottlesAtHome: "1 Blue / 0 White",
+    paymentPending: 400,
+  },
+  {
+    id: 12,
+    name: "Rabia Hassan",
+    phone: "0317-0000000",
+    dateJoined: "2023-10-15",
+    status: "Active",
+    address: "House 90, Model Colony, Block K",
+    bottlesAtHome: "4 Blue / 1 White",
+    paymentPending: 1300,
+  },
+];
 
 const Customers = () => {
   const router = useRouter();
-
-
-
-
   const [customers, setCustomers] = useState<Customer[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [viewMode, setViewMode] = useState<"all" | "pending">("all");
-  const [sortFilter, setSortFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
-  const [confirmModalOpen, setConfirmModalOpen] = useState(false);
-  const [confirmAction, setConfirmAction] = useState<
-    "activate" | "suspend" | "unsuspend" | null
-  >(null);
-  const [selectedCustomerId, setSelectedCustomerId] = useState<number | null>(
-    null
-  );
-
-  
-    const { data,} = useAllCustomersQuery(null);
-
-
-
-  console.log("API response:", data);
-
-  useEffect(() => {
-    if (data && Array.isArray(data.customers)) {
-      setCustomers(data.customers);}
-  }, [data]);
-
-  console.log("Customers state:", customers);
-
-  const handleSubmit = (data: CustomerFormData) => {
-  const newCustomer: Customer = {
-    customer_id:
-      customers.length > 0 ? Math.max(...customers.map((c) => c.customer_id)) + 1 : 1,
-    id: customers.length > 0 ? Math.max(...customers.map((c) => c.customer_id)) + 1 : 1,
-    name: data.name,
-    phone: data.phone,
-    created_at: new Date().toISOString(),
-    status: "Active",
-    address: data.address || "",
-    bottlesAtHome: "0 Blue / 0 White",
-    paymentPending: 0,
-  };
-
-  setCustomers((prev) => [...prev, newCustomer]);
-  setIsModalOpen(false);
-};
- const handleActivatePending = (id: number) => {
-  setCustomers((prev) =>
-    prev.map((c) =>
-      c.customer_id === id && c.status === "Pending" ? { ...c, status: "Active" } : c
-    )
-  );
-};
-
-const handleToggleSuspend = (id: number) => {
-  setCustomers((prev) =>
-    prev.map((c) => {
-      if (c.customer_id === id) {
-        if (c.status === "Active") return { ...c, status: "Suspended" };
-        if (c.status === "Suspended") return { ...c, status: "Active" };
-      }
-      return c;
-    })
-  );
-};
-const handleEdit = (customer: Customer) => {
-  setEditingCustomer(customer);
-  setIsEditModalOpen(true);
-};
-const handleEditSubmit = (data: CustomerFormData) => {
-  if (!editingCustomer) return;
-
-  setCustomers((prev) =>
-    prev.map((c) =>
-      c.customer_id === editingCustomer.customer_id
-        ? {
-            ...c,
-            name: data.name,
-            phone: data.phone,
-            address: data.address || "",
-          }
-        : c
-    )
-  );
-
-  setIsEditModalOpen(false);
-  setEditingCustomer(null);
-};
-  const pendingCount = customers.filter((c) => c.status === "Pending").length;
-
   const itemsPerPage = 10;
 
-  const filteredCustomers = customers.filter((c) => {
-    const query = searchTerm.toLowerCase().trim();
-    // const matchesSearch =
-    //   c.name.toLowerCase().includes(query) ||
-    //   c.address.toLowerCase().includes(query);
+  // Simulate loading data (replace with actual API call later)
+  useEffect(() => {
+    const loadCustomers = () => {
+      setLoading(true);
+      // Simulate API delay
+      setTimeout(() => {
+        setCustomers(sampleCustomers);
+        setLoading(false);
+      }, 1000);
+    };
 
-    // let matchesStatus = true;
+    loadCustomers();
+  }, []);
 
-    // Tab filtering
-    // if (viewMode === "all") {
-    //   // All Customers tab: Show Active and Suspended only
-    //   matchesStatus = c.status === "Active" || c.status === "Suspended";
-    // } else if (viewMode === "pending") {
-    //   // Pending tab: Show only Pending
-    //   matchesStatus = c.status === "Pending";
-    // }
-
-    // // Dropdown filter (only in All Customers tab)
-    // if (viewMode === "all" && sortFilter !== "all") {
-    //   if (sortFilter === "active") {
-    //     matchesStatus = c.status === "Active";
-    //   } else if (sortFilter === "suspended") {
-    //     matchesStatus = c.status === "Suspended";
-    //   }
-    // }
-
-    return null;
+  // Filter customers based on search and status
+  const filteredCustomers = customers.filter((customer) => {
+    const matchesSearch = 
+      customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      customer.phone.includes(searchTerm);
+    
+    const matchesStatus = statusFilter ? customer.status === statusFilter : true;
+    
+    return matchesSearch && matchesStatus;
   });
 
-  const totalPages = Math.ceil(customers.length / itemsPerPage) || 1;
+  // Pagination
+  const totalPages = Math.ceil(filteredCustomers.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedCustomers = customers.slice(
-    startIndex,
-    startIndex + itemsPerPage
-  );
+  const paginatedCustomers = filteredCustomers.slice(startIndex, startIndex + itemsPerPage);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, statusFilter]);
 
   const getStatusStyles = (status: string) => {
-    const map: Record<string, string> = {
-      Active: "bg-emerald-50 text-emerald-700 border-emerald-200",
-      Suspended: "bg-red-50 text-red-700 border-red-200",
-      Pending: "bg-yellow-50 text-yellow-700 border-yellow-200",
+    const statusConfig: { [key: string]: string } = {
+      'Active': 'bg-emerald-50 text-emerald-700 border-emerald-200',
+      'Inactive': 'bg-red-50 text-red-700 border-red-200',
     };
-    return map[status] || "";
+    
+    return statusConfig[status] || statusConfig['Active'];
   };
 
-  const openConfirmModal = (
-    id: number,
-    action: "activate" | "suspend" | "unsuspend"
-  ) => {
-    setSelectedCustomerId(id);
-    setConfirmAction(action);
-    setConfirmModalOpen(true);
+  const handleViewDetails = (customerId: number) => {
+    router.push(`/customers/${customerId}`);
   };
 
-  const handleConfirmAction = () => {
-    if (!selectedCustomerId || !confirmAction) return;
-
-    if (confirmAction === "activate") {
-      handleActivatePending(selectedCustomerId);
-    } else {
-      handleToggleSuspend(selectedCustomerId);
-    }
+  const handleToggleStatus = (customerId: number) => {
+    setCustomers(customers.map(c => 
+      c.id === customerId 
+        ? { ...c, status: c.status === 'Active' ? 'Inactive' : 'Active' }
+        : c
+    ));
   };
 
-  const getConfirmModalProps = () => {
-    const customer = customers.find((c) => c.id === selectedCustomerId);
-    if (!customer)
-      return {
-        title: "",
-        message: "",
-        confirmText: "",
-        confirmColor: "red" as const,
-      };
-
-    if (confirmAction === "activate") {
-      return {
-        title: "Activate Customer?",
-        message: "Are you sure you want to activate this pending customer?",
-        confirmText: "Yes, Activate",
-        confirmColor: "blue" as const,
-      };
-    } else if (confirmAction === "suspend") {
-      return {
-        title: "Suspend Customer?",
-        message: "Are you sure you want to suspend this customer?",
-        confirmText: "Yes, Suspend",
-        confirmColor: "red" as const,
-      };
-    } else {
-      return {
-        title: "Reactivate Customer?",
-        message: "Are you sure you want to reactivate this suspended customer?",
-        confirmText: "Yes, Reactivate",
-        confirmColor: "green" as const,
-      };
-    }
-  };
-
-  const formatDateTime = (value: string) => {
-  const date = new Date(value);
-
-  const formattedDate = date.toLocaleDateString("en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
-
-  const formattedTime = date.toLocaleTimeString("en-GB", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-
-  return `${formattedDate} | ${formattedTime}`;
-};
-
+  // Loading state
+  if (loading) {
+    return (
+      <div className="ml-0 min-h-screen bg-white ">
+        <div className="p-6">
+          <div className="mb-6">
+            <h1 className="text-2xl font-bold text-slate-800 mb-2">Customers</h1>
+            <p className="text-slate-500">Manage and track all customer information</p>
+          </div>
+          
+          {/* Loading skeleton */}
+          <div className="bg-white rounded-xl shadow-sm p-6 mb-6 border border-slate-200">
+            <div className="animate-pulse">
+              <div className="h-4 bg-slate-200 rounded w-1/4 mb-4"></div>
+              <div className="h-10 bg-slate-200 rounded w-full"></div>
+            </div>
+          </div>
+          
+          <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-slate-200 mt-15">
+            <div className="animate-pulse p-6">
+              <div className="space-y-4">
+                {[...Array(5)].map((_, i) => (
+                  <div key={i} className="h-16 bg-slate-200 rounded"></div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className=" min-h-screen p-2 bg-white">
-      <div className="sm:p-4">
-        <h1 className="text-xl sm:text-2xl font-semibold text-black mb-4">
-          Customers
-        </h1>
+    <div className="ml-0 min-h-screen bg-white">
+      <div className="p-6">
+        {/* Header */}
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-slate-800 mb-2">Customers</h1>
+          <p className="text-slate-500">Manage and track all customer information</p>
+        </div>
 
-        {/* 🔍 Search + Sort + Add */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-          <div className="relative w-90">
-            <Search
-              size={16}
-              className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-            />
-            <input
-              type="text"
-              placeholder="Search by customer name / phone"
-              className="w-90 pl-9 pr-4 py-2 border border-indigo-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-sm"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div className="bg-blue-50 rounded-xl p-4 border border-blue-200">
+            <div className="text-blue-600 text-sm font-medium">Total Customers</div>
+            <div className="text-2xl font-bold text-blue-700">{customers.length}</div>
           </div>
-
-          <div className="flex items-center gap-3">
-            <span className="text-sm text-[#475569] whitespace-nowrap">
-              Status
-            </span>
-
-            <FormControl
-              size="small"
-              sx={{
-                width: 130,
-                bgcolor: "white",
-                borderRadius: "8px",
-                boxShadow: "0px 2px 5px rgba(0, 0, 0, 0.04)",
-              }}
-              disabled={viewMode === "pending"}
-            >
-              <Select
-                value={sortFilter}
-                onChange={(e: SelectChangeEvent) =>
-                  setSortFilter(e.target.value)
-                }
-                IconComponent={KeyboardArrowDownIcon}
-                displayEmpty
-                sx={{
-                  color: "#374151",
-                  fontSize: 15,
-                  fontWeight: 500,
-                  borderRadius: "8px",
-                  "& .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#D1D5DB",
-                  },
-                  "&:hover .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#9CA3AF",
-                  },
-                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#2563EB",
-                    boxShadow: "0 0 0 3px rgba(37,99,235,0.2)",
-                  },
-                  "& .MuiSelect-select": {
-                    py: "9px",
-                    px: "px",
-                    display: "flex",
-                    alignItems: "center",
-                  },
-                }}
-                MenuProps={{
-                  PaperProps: {
-                    sx: {
-                      mt: 1,
-                      borderRadius: "18px",
-                      boxShadow: "0 8px 16px rgba(0, 0, 0, 0.06)",
-                      minWidth: "130px",
-                      "& .MuiMenuItem-root": {
-                        fontSize: 15,
-                        fontWeight: 500,
-                        color: "#374151",
-                        "&.Mui-selected": {
-                          backgroundColor: "#EFF6FF",
-                          color: "#2563EB",
-                        },
-                        "&.Mui-selected:hover": {
-                          backgroundColor: "#E0ECFF",
-                        },
-                      },
-                    },
-                  },
-                }}
-              >
-                <MenuItem value="all">All</MenuItem>
-                <MenuItem value="active">Active </MenuItem>
-                <MenuItem value="suspended">Suspended </MenuItem>
-              </Select>
-            </FormControl>
-
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className="bg-[#5B63E5] text-white px-4 py-2 rounded-md text-md hover:bg-[#4a52d4] transition-all duration-200"
-            >
-              + Add Customer
-            </button>
+          <div className="bg-green-50 rounded-xl p-4 border border-green-200">
+            <div className="text-green-600 text-sm font-medium">Active Customers</div>
+            <div className="text-2xl font-bold text-green-700">
+              {customers.filter(c => c.status === 'Active').length}
+            </div>
+          </div>
+          <div className="bg-red-50 rounded-xl p-4 border border-red-200">
+            <div className="text-red-600 text-sm font-medium">Inactive Customers</div>
+            <div className="text-2xl font-bold text-red-700">
+              {customers.filter(c => c.status === 'Inactive').length}
+            </div>
           </div>
         </div>
 
-        {/* 🔵 Tabs */}
-        <div className="flex items-center gap-2 mb-5 bg-blue-100 p-1 rounded-lg w-fit">
-          <button
-            onClick={() => {
-              setViewMode("all");
-              setSortFilter("all");
-            }}
-            className={`px-4 py-1.5 rounded-lg font-medium text-xs sm:text-sm ${
-              viewMode === "all"
-                ? "bg-[#5B63E5] text-white"
-                : "bg-transparent text-black"
-            }`}
-          >
-            All Customers
-          </button>
-          <button
-            onClick={() => {
-              setViewMode("pending");
-              setSortFilter("all");
-            }}
-            className={`px-4 py-1.5 rounded-lg font-medium text-xs sm:text-sm relative ${
-              viewMode === "pending"
-                ? "bg-[#FF7438] text-white"
-                : "bg-transparent text-gray-700"
-            }`}
-          >
-            Pending Approval
-            {pendingCount > 0 && viewMode !== "pending" && (
-              <span className="absolute -top-2 -right-3 bg-[#FF7438] text-white text-xs rounded-full px-2 py-0.5 font-bold">
-                {pendingCount}
-              </span>
-            )}
-          </button>
+        {/* Search and Filters */}
+        <div className="bg-white rounded-xl shadow-sm p-6 mb-6 border border-slate-200">
+          <div className="flex flex-col lg:flex-row gap-6 items-center justify-between">
+            {/* Search Bar */}
+            <div className="flex-1 w-full lg:max-w-lg relative">
+              <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                <Search className="h-4 w-4 text-slate-400" />
+              </div>
+              <input
+                type="text"
+                placeholder="Search by customer name / phone"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2.5 border  rounded-lg bg-white    outline-none text-slate-700 placeholder-slate-400"
+              />
+            </div>
+
+            {/* Filters */}
+            <div className="flex gap-4 w-full lg:w-auto">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-slate-600 whitespace-nowrap">Status</span>
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-slate-700"
+                  style={{ backgroundColor: '#E5F0FE' }}
+                >
+                  <option value="">All Status</option>
+                  <option value="Active">Active</option>
+                  <option value="Inactive">Inactive</option>
+                </select>
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* 📋 Customers Table */}
-        <div className="bg-white rounded-xl overflow-hidden border border-slate-200">
-          <div className="overflow-x-auto min-h-[300px] hidden sm:block">
-            {paginatedCustomers.length > 0 ? (
+        {/* No Results Message */}
+        {filteredCustomers.length === 0 && !loading && (
+          <div className="bg-white rounded-xl shadow-sm p-8 border border-slate-200 text-center">
+            <div className="text-slate-400 mb-2">No customers found</div>
+            <div className="text-sm text-slate-500">
+              Try adjusting your search criteria or filters
+            </div>
+          </div>
+        )}
+
+        {/* Customers Table */}
+        {filteredCustomers.length > 0 && (
+          <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-slate-200">
+            <div className="overflow-x-auto">
               <table className="w-full">
-                <thead style={{ backgroundColor: "#E5F0FE" }}>
+                <thead style={{ backgroundColor: '#E5F0FE' }}>
                   <tr>
-                    <th className="text-left py-4 px-4 text-xs font-semibold text-black uppercase">
-                      ID
-                    </th>
-                    <th className="text-left py-4 px-4 text-xs font-semibold text-black uppercase">
-                      Customer
-                    </th>
-                    <th className="text-left py-4 px-4 text-xs font-semibold text-black uppercase">
-                      Date Joined
-                    </th>
-                    <th className="text-left py-4 px-4 text-xs font-semibold text-black uppercase">
-                      Status
-                    </th>
-                    <th className="text-left py-4 px-4 text-xs font-semibold text-black uppercase">
-                      Address
-                    </th>
-                    {viewMode === "all" && (
-                      <>
-                        <th className="text-left py-4 px-4 text-xs font-semibold text-black uppercase">
-                          Bottles at Home
-                        </th>
-                        <th className="text-left py-4 px-4 text-xs font-semibold text-black uppercase">
-                          Payment Pending
-                        </th>
-                      </>
-                    )}
-                    <th className="text-left py-4 px-4 text-xs font-semibold text-black uppercase">
-                      Actions
-                    </th>
+                    <th className="text-left py-4 px-4 text-xs font-semibold text-slate-600 uppercase tracking-wider">ID</th>
+                    <th className="text-left py-4 px-4 text-xs font-semibold text-slate-600 uppercase tracking-wider">Customer</th>
+                    <th className="text-left py-4 px-4 text-xs font-semibold text-slate-600 uppercase tracking-wider">Date Joined</th>
+                    <th className="text-left py-4 px-4 text-xs font-semibold text-slate-600 uppercase tracking-wider">Status</th>
+                    <th className="text-left py-4 px-4 text-xs font-semibold text-slate-600 uppercase tracking-wider">Address</th>
+                    <th className="text-left py-4 px-4 text-xs font-semibold text-slate-600 uppercase tracking-wider">Bottles at Home</th>
+                    <th className="text-left py-4 px-4 text-xs font-semibold text-slate-600 uppercase tracking-wider">Payment Pending</th>
+                    <th className="text-left py-4 px-4 text-xs font-semibold text-slate-600 uppercase tracking-wider">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y  divide-slate-100">
-                  {paginatedCustomers.map((c) => (
-                    <tr key={c.customer_id}   className="hover:bg-slate-50">
+                <tbody className="divide-y divide-slate-100">
+                  {paginatedCustomers.map((customer, index) => (
+                    <tr 
+                      key={customer.id} 
+                      className={`${index % 2 === 0 ? 'bg-white' : 'bg-slate-25'} hover:bg-slate-50 transition-colors duration-200`}
+                    >
                       <td className="py-4 px-4 text-sm font-medium text-indigo-600">
-                        #{c.customer_id}
+                        #{customer.id}
                       </td>
                       <td className="py-4 px-4">
                         <div>
-                          <div className="text-sm font-medium text-slate-800">
-                            {c.name}
-                          </div>
-                          <div className="text-xs text-slate-500">
-                            {c.phone}
-                          </div>
+                          <div className="text-sm font-medium text-slate-800">{customer.name}</div>
+                          <div className="text-xs text-slate-500">{customer.phone}</div>
                         </div>
                       </td>
-                      <td className="py-4 px-4 whitespace-nowrap text-sm font-medium text-slate-800">
-                       {formatDateTime(c.created_at)}
+                      <td className="py-4 px-4">
+                        <div className="text-sm font-medium text-slate-800">{customer.dateJoined}</div>
                       </td>
                       <td className="py-4 px-4">
-                        <span
-                          className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${getStatusStyles(
-                            c.status
-                          )}`}
-                        >
-                          {c.status}
+                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${getStatusStyles(customer.status)}`}>
+                          {customer.status}
                         </span>
                       </td>
-                      <td className="py-4 px-4 w-[140px] text-sm">
-                        {c.house} {c.block} {c.colony}
-                      </td>
-                      {viewMode === "all" && (
-                        <>
-                          <td className="py-4 px-4 text-sm">
-                            {c.bottlesAtHome}
-                          </td>
-                          <td className="py-4 px-4 text-sm text-red-600 font-semibold">
-                            Rs {c.paymentPending}
-                          </td>
-                        </>
-                      )}
                       <td className="py-4 px-4">
-                        <div className="flex flex-wrap gap-2">
-                          {c.status === "Pending" ? (
-                            <button
-                              onClick={() => openConfirmModal(c.customer_id, "activate")}
-                              className="px-3 py-1.5 bg-[#00B37A] text-white text-xs font-medium rounded-md hover:bg-[#4a52d4] transition"
-                            >
-                              Approve
-                            </button>
-                          ) : (
-                            <button
-                              onClick={() =>
-                                openConfirmModal(
-                                  c.id,
-                                  c.status === "Active"
-                                    ? "suspend"
-                                    : "unsuspend"
-                                )
-                              }
-                              className={`px-3 w-[80px] py-1.5 text-xs font-medium rounded-md border transition ${
-                                c.status === "Active"
-                                  ? "bg-[#E94A4C] text-white border-red-300 hover:bg-red-600"
-                                  : "bg-[#00B37A] text-white border-green-300 hover:bg-green-600"
-                              }`}
-                            >
-                              {c.status === "Active" ? "Suspend" : "Active"}
-                            </button>
-                          )}
-                          <button
-                            onClick={() => handleEdit(c)}
-                            className="px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-md hover:bg-blue-700 flex items-center gap-1"
+                        <div className="text-sm font-medium text-slate-800">{customer.address}</div>
+                      </td>
+                      <td className="py-4 px-4 text-sm font-semibold text-slate-700">
+                        {customer.bottlesAtHome}
+                      </td>
+                      <td className="py-4 px-4 text-sm font-semibold text-red-600">
+                        Rs {customer.paymentPending.toLocaleString()}
+                      </td>
+                      <td className="py-4 px-4">
+                        <div className="flex items-center gap-1 flex-wrap">
+                          <button 
+                            className="inline-flex items-center gap-1 px-2 py-1.5 bg-indigo-600 text-white text-xs font-medium rounded-md hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all duration-200 shadow-sm hover:shadow-lg whitespace-nowrap"
+                            onClick={() => handleViewDetails(customer.id)}
                           >
-                            <Edit size={14} /> Edit
+                            <Eye className="h-3 w-3 flex-shrink-0" />
+                            <span>View</span>
                           </button>
-                          <button
-                            onClick={() => router.push(`/customers/${c.id}`)}
-                            className="px-3 py-1.5 bg-indigo-600 text-white text-xs font-medium rounded-md hover:bg-indigo-700 flex items-center gap-1"
+                          <button 
+                            className={`inline-flex items-center gap-1 px-2 py-1.5 text-white text-xs font-medium rounded-md hover:scale-105 focus:ring-2 focus:ring-offset-2 transition-all duration-200 shadow-sm hover:shadow-lg whitespace-nowrap ${
+                              customer.status === 'Active' 
+                                ? 'bg-red-600 hover:bg-red-700 focus:ring-red-500' 
+                                : 'bg-green-600 hover:bg-green-700 focus:ring-green-500'
+                            }`}
+                            onClick={() => handleToggleStatus(customer.id)}
                           >
-                            <Eye size={14} /> View
+                            {customer.status === 'Active' ? 'Suspend' : 'Approve'}
                           </button>
                         </div>
                       </td>
@@ -567,208 +383,54 @@ const handleEditSubmit = (data: CustomerFormData) => {
                   ))}
                 </tbody>
               </table>
-            ) : (
-              <div className="flex items-center justify-center h-[300px] text-gray-500 text-sm">
-                No customers found.
+            </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex justify-between items-center p-4 border-t border-slate-100 bg-slate-50">
+                <div className="text-sm text-slate-500">
+                  Showing {startIndex + 1}-{Math.min(startIndex + itemsPerPage, filteredCustomers.length)} of {filteredCustomers.length} customers
+                </div>
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                    disabled={currentPage === 1}
+                    className="inline-flex items-center px-3 py-2 border border-slate-300 bg-white text-sm font-medium text-slate-500 rounded-md hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                    Prev
+                  </button>
+                  
+                  <div className="flex items-center space-x-1">
+                    {[...Array(totalPages)].map((_, i) => (
+                      <button
+                        key={i + 1}
+                        onClick={() => setCurrentPage(i + 1)}
+                        className={`px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 ${
+                          currentPage === i + 1
+                            ? 'bg-indigo-600 text-white shadow-sm'
+                            : 'text-slate-500 hover:bg-slate-100'
+                        }`}
+                      >
+                        {i + 1}
+                      </button>
+                    ))}
+                  </div>
+
+                  <button
+                    onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                    disabled={currentPage === totalPages}
+                    className="inline-flex items-center px-3 py-2 border border-slate-300 bg-white text-sm font-medium text-slate-500 rounded-md hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Next
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
+                  </div>
               </div>
             )}
           </div>
-
-          {/* Mobile View */}
-          <div className="sm:hidden">
-            {paginatedCustomers.length > 0 ? (
-              <ul className="divide-y divide-slate-100">
-                {paginatedCustomers.map((c) => (
-                  <li key={c.customer_id} className="p-4">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <div className="text-sm font-semibold text-slate-800">
-                          {c.name}
-                        </div>
-                        <div className="text-xs text-slate-500">{c.phone}</div>
-                      </div>
-                      <div className="text-xs font-medium text-indigo-600">
-                        #{c.id}
-                      </div>
-                    </div>
-
-                    <div className="mt-2 grid grid-cols-2 gap-2">
-                      <div className="text-xs text-slate-500">Joined</div>
-                      <div className="text-xs text-slate-800">
-                        {new Date(c.dateJoined).toLocaleDateString("en-GB", {
-                          day: "2-digit",
-                          month: "short",
-                          year: "numeric",
-                        })}
-                      </div>
-
-                      <div className="text-xs text-slate-500">Status</div>
-                      <div>
-                        <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border ${getStatusStyles(
-                            c.status
-                          )}`}
-                        >
-                          {c.status}
-                        </span>
-                      </div>
-
-                      <div className="text-xs text-slate-500">Address</div>
-                      <div className="text-xs text-slate-800">{c.address}</div>
-
-                      {viewMode === "all" && (
-                        <>
-                          <div className="text-xs text-slate-500">Bottles</div>
-                          <div className="text-xs text-slate-800">
-                            {c.bottlesAtHome}
-                          </div>
-
-                          <div className="text-xs text-slate-500">Pending</div>
-                          <div className="text-xs text-red-600 font-semibold">
-                            Rs 
-                          </div>
-                        </>
-                      )}
-                    </div>
-
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      {c.status === "Pending" ? (
-                        <button
-                          onClick={() => openConfirmModal(c.customer_id, "activate")}
-                          className="px-3 py-1.5 bg-[#5B63E5] text-white text-xs font-medium rounded-md hover:bg-[#4a52d4] transition"
-                        >
-                          Activate
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() =>
-                            openConfirmModal(
-                              c.id,
-                              c.status === "Active" ? "suspend" : "unsuspend"
-                            )
-                          }
-                          className={`px-3 py-1.5 text-xs font-medium rounded-md border transition ${
-                            c.status === "Active"
-                              ? "bg-[#E94A4C] text-white border-red-300 hover:bg-red-600"
-                              : "bg-[#00B37A] text-white border-green-300 hover:bg-green-600"
-                          }`}
-                        >
-                          {c.status === "Active" ? "Suspend" : "Reactivate"}
-                        </button>
-                      )}
-                      <button
-                        onClick={() => handleEdit(c)}
-                        className="px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-md hover:bg-blue-700 flex items-center gap-1"
-                      >
-                        <Edit size={14} /> Edit
-                      </button>
-                      <button
-                        onClick={() => router.push(`/customers/${c.customer_id}`)}  
-                        className="px-3 py-1.5 bg-indigo-600 text-white text-xs font-medium rounded-md hover:bg-indigo-700 flex items-center gap-1"
-                      >
-                        <Eye size={14} /> View
-                      </button>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <div className="flex items-center justify-center h-[300px] text-gray-500 text-sm">
-                No customers found.
-              </div>
-            )}
-          </div>
-
-          {/* Pagination */}
-          <div className="mt-4 bg-white border border-gray-200 rounded-lg px-4 py-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between text-sm text-gray-600">
-            <div>
-              Page {currentPage} of {totalPages} — Showing {startIndex + 1}-
-              {Math.min(startIndex + itemsPerPage, filteredCustomers.length)} of{" "}
-              {filteredCustomers.length} customers
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                disabled={currentPage === 1}
-                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                Prev
-              </button>
-              {[...Array(totalPages)].map((_, i) => (
-                <button
-                  key={i + 1}
-                  onClick={() => setCurrentPage(i + 1)}
-                  className={`px-3 py-2 text-sm font-medium rounded-lg border transition-colors ${
-                    currentPage === i + 1
-                      ? "bg-indigo-600 text-white border-transparent"
-                      : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
-                  }`}
-                >
-                  {i + 1}
-                </button>
-              ))}
-              <button
-                disabled={currentPage === totalPages}
-                onClick={() =>
-                  setCurrentPage((p) => Math.min(totalPages, p + 1))
-                }
-                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                Next
-              </button>
-            </div>
-          </div>
-        </div>
+        )}
       </div>
-
-      {/* Confirm Modal */}
-      <ConfirmModal
-        isOpen={confirmModalOpen}
-        onClose={() => {
-          setConfirmModalOpen(false);
-          setSelectedCustomerId(null);
-          setConfirmAction(null);
-        }}
-        onConfirm={handleConfirmAction}
-        {...getConfirmModalProps()}
-      />
-
-      {/* Add Modal */}
-      <AddCustomerModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSubmit={handleSubmit}
-      />
-
-      {/* Edit Modal */}
-      <AddCustomerModal
-        isOpen={isEditModalOpen}
-        onClose={() => {
-          setIsEditModalOpen(false);
-          setEditingCustomer(null);
-        }}
-        onSubmit={handleEditSubmit}
-        title="Edit Customer"
-        initialData={
-          editingCustomer
-            ? {
-                name: editingCustomer.name || "",
-                phone: editingCustomer.phone || "",
-                houseNumber:
-                  editingCustomer.address?.split(",")[0]?.trim() || "",
-                streetNumber:
-                  editingCustomer.address?.split(",")[1]?.trim() || "",
-                colony: editingCustomer.address?.split(",")[2]?.trim() || "",
-                block: editingCustomer.address?.split(",")[3]?.trim() || "",
-                dispenserGallon:
-                  parseInt(editingCustomer.bottlesAtHome?.split("/")[0]) || 0,
-                normalGallon:
-                  parseInt(editingCustomer.bottlesAtHome?.split("/")[1]) || 0,
-                customerName: editingCustomer.name || "",
-              }
-            : undefined
-        }
-      />
     </div>
   );
 };
