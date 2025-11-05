@@ -1,7 +1,6 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import { Search, Eye, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 
 interface Customer {
   id: number;
@@ -138,7 +137,6 @@ const sampleCustomers: Customer[] = [
 ];
 
 const Customers = () => {
-  const router = useRouter();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -146,11 +144,9 @@ const Customers = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  // Simulate loading data (replace with actual API call later)
   useEffect(() => {
     const loadCustomers = () => {
       setLoading(true);
-      // Simulate API delay
       setTimeout(() => {
         setCustomers(sampleCustomers);
         setLoading(false);
@@ -160,7 +156,6 @@ const Customers = () => {
     loadCustomers();
   }, []);
 
-  // Filter customers based on search and status
   const filteredCustomers = customers.filter((customer) => {
     const matchesSearch = 
       customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -171,12 +166,10 @@ const Customers = () => {
     return matchesSearch && matchesStatus;
   });
 
-  // Pagination
   const totalPages = Math.ceil(filteredCustomers.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedCustomers = filteredCustomers.slice(startIndex, startIndex + itemsPerPage);
 
-  // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm, statusFilter]);
@@ -191,7 +184,7 @@ const Customers = () => {
   };
 
   const handleViewDetails = (customerId: number) => {
-    router.push(`/customers/${customerId}`);
+    alert(`View details for customer ${customerId}`);
   };
 
   const handleToggleStatus = (customerId: number) => {
@@ -202,26 +195,24 @@ const Customers = () => {
     ));
   };
 
-  // Loading state
   if (loading) {
     return (
-      <div className="ml-0 min-h-screen bg-white ">
-        <div className="p-6">
+      <div className="min-h-screen bg-white">
+        <div className="p-4 sm:p-6">
           <div className="mb-6">
-            <h1 className="text-2xl font-bold text-slate-800 mb-2">Customers</h1>
-            <p className="text-slate-500">Manage and track all customer information</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-slate-800 mb-2">Customers</h1>
+            <p className="text-sm sm:text-base text-slate-500">Manage and track all customer information</p>
           </div>
           
-          {/* Loading skeleton */}
-          <div className="bg-white rounded-xl shadow-sm p-6 mb-6 border border-slate-200">
+          <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 mb-6 border border-slate-200">
             <div className="animate-pulse">
               <div className="h-4 bg-slate-200 rounded w-1/4 mb-4"></div>
               <div className="h-10 bg-slate-200 rounded w-full"></div>
             </div>
           </div>
           
-          <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-slate-200 mt-15">
-            <div className="animate-pulse p-6">
+          <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-slate-200">
+            <div className="animate-pulse p-4 sm:p-6">
               <div className="space-y-4">
                 {[...Array(5)].map((_, i) => (
                   <div key={i} className="h-16 bg-slate-200 rounded"></div>
@@ -235,95 +226,93 @@ const Customers = () => {
   }
 
   return (
-    <div className="ml-0 min-h-screen bg-white">
-      <div className="p-6">
+    <div className="min-h-screen bg-white">
+      <div className="p-4 sm:p-6">
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-slate-800 mb-2">Customers</h1>
-          <p className="text-slate-500">Manage and track all customer information</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-800 mb-2">Customers</h1>
+          <p className="text-sm sm:text-base text-slate-500">Manage and track all customer information</p>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-6">
           <div className="bg-blue-50 rounded-xl p-4 border border-blue-200">
-            <div className="text-blue-600 text-sm font-medium">Total Customers</div>
-            <div className="text-2xl font-bold text-blue-700">{customers.length}</div>
+            <div className="text-blue-600 text-xs sm:text-sm font-medium">Total Customers</div>
+            <div className="text-xl sm:text-2xl font-bold text-blue-700">{customers.length}</div>
           </div>
           <div className="bg-green-50 rounded-xl p-4 border border-green-200">
-            <div className="text-green-600 text-sm font-medium">Active Customers</div>
-            <div className="text-2xl font-bold text-green-700">
+            <div className="text-green-600 text-xs sm:text-sm font-medium">Active Customers</div>
+            <div className="text-xl sm:text-2xl font-bold text-green-700">
               {customers.filter(c => c.status === 'Active').length}
             </div>
           </div>
           <div className="bg-red-50 rounded-xl p-4 border border-red-200">
-            <div className="text-red-600 text-sm font-medium">Inactive Customers</div>
-            <div className="text-2xl font-bold text-red-700">
+            <div className="text-red-600 text-xs sm:text-sm font-medium">Inactive Customers</div>
+            <div className="text-xl sm:text-2xl font-bold text-red-700">
               {customers.filter(c => c.status === 'Inactive').length}
             </div>
           </div>
         </div>
 
         {/* Search and Filters */}
-        <div className="bg-white rounded-xl shadow-sm p-6 mb-6 border border-slate-200">
-          <div className="flex flex-col lg:flex-row gap-6 items-center justify-between">
+        <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 mb-6 border border-slate-200">
+          <div className="flex flex-col gap-4 sm:gap-6">
             {/* Search Bar */}
-            <div className="flex-1 w-full lg:max-w-lg relative">
+            <div className="relative w-full">
               <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
                 <Search className="h-4 w-4 text-slate-400" />
               </div>
               <input
                 type="text"
-                placeholder="Search by customer name / phone"
+                placeholder="Search by name / phone"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 border  rounded-lg bg-white    outline-none text-slate-700 placeholder-slate-400"
+                className="w-full pl-10 pr-4 py-2.5 border rounded-lg bg-white outline-none text-slate-700 placeholder-slate-400 text-sm"
               />
             </div>
 
             {/* Filters */}
-            <div className="flex gap-4 w-full lg:w-auto">
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-slate-600 whitespace-nowrap">Status</span>
-                <select
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                  className="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-slate-700"
-                  style={{ backgroundColor: '#E5F0FE' }}
-                >
-                  <option value="">All Status</option>
-                  <option value="Active">Active</option>
-                  <option value="Inactive">Inactive</option>
-                </select>
-              </div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-slate-600 whitespace-nowrap">Status</span>
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-slate-700 text-sm flex-1 sm:flex-none"
+                style={{ backgroundColor: '#E5F0FE' }}
+              >
+                <option value="">All Status</option>
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
+              </select>
             </div>
           </div>
         </div>
 
         {/* No Results Message */}
         {filteredCustomers.length === 0 && !loading && (
-          <div className="bg-white rounded-xl shadow-sm p-8 border border-slate-200 text-center">
-            <div className="text-slate-400 mb-2">No customers found</div>
-            <div className="text-sm text-slate-500">
+          <div className="bg-white rounded-xl shadow-sm p-6 sm:p-8 border border-slate-200 text-center">
+            <div className="text-slate-400 mb-2 text-sm">No customers found</div>
+            <div className="text-xs sm:text-sm text-slate-500">
               Try adjusting your search criteria or filters
             </div>
           </div>
         )}
 
-        {/* Customers Table */}
+        {/* Customers Table - Desktop */}
         {filteredCustomers.length > 0 && (
-          <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-slate-200">
+          <div className="hidden sm:block bg-white rounded-xl shadow-sm overflow-hidden border border-slate-200">
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead style={{ backgroundColor: '#E5F0FE' }}>
                   <tr>
-                    <th className="text-left py-4 px-4 text-xs font-semibold text-slate-600 uppercase tracking-wider">ID</th>
-                    <th className="text-left py-4 px-4 text-xs font-semibold text-slate-600 uppercase tracking-wider">Customer</th>
-                    <th className="text-left py-4 px-4 text-xs font-semibold text-slate-600 uppercase tracking-wider">Date Joined</th>
-                    <th className="text-left py-4 px-4 text-xs font-semibold text-slate-600 uppercase tracking-wider">Status</th>
-                    <th className="text-left py-4 px-4 text-xs font-semibold text-slate-600 uppercase tracking-wider">Address</th>
-                    <th className="text-left py-4 px-4 text-xs font-semibold text-slate-600 uppercase tracking-wider">Bottles at Home</th>
-                    <th className="text-left py-4 px-4 text-xs font-semibold text-slate-600 uppercase tracking-wider">Payment Pending</th>
-                    <th className="text-left py-4 px-4 text-xs font-semibold text-slate-600 uppercase tracking-wider">Actions</th>
+                    <th className="text-left py-4 px-3 sm:px-4 text-xs font-semibold text-slate-600 uppercase tracking-wider">ID</th>
+                    <th className="text-left py-4 px-3 sm:px-4 text-xs font-semibold text-slate-600 uppercase tracking-wider">Customer</th>
+                    <th className="text-left py-4 px-3 sm:px-4 text-xs font-semibold text-slate-600 uppercase tracking-wider">Date Joined</th>
+                    <th className="text-left py-4 px-3 sm:px-4 text-xs font-semibold text-slate-600 uppercase tracking-wider">Status</th>
+                    <th className="text-left py-4 px-3 sm:px-4 text-xs font-semibold text-slate-600 uppercase tracking-wider">Address</th>
+                    <th className="text-left py-4 px-3 sm:px-4 text-xs font-semibold text-slate-600 uppercase tracking-wider">Bottles</th>
+                    <th className="text-left py-4 px-3 sm:px-4 text-xs font-semibold text-slate-600 uppercase tracking-wider">Payment</th>
+                    <th className="text-left py-4 px-3 sm:px-4 text-xs font-semibold text-slate-600 uppercase tracking-wider">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -332,33 +321,33 @@ const Customers = () => {
                       key={customer.id} 
                       className={`${index % 2 === 0 ? 'bg-white' : 'bg-slate-25'} hover:bg-slate-50 transition-colors duration-200`}
                     >
-                      <td className="py-4 px-4 text-sm font-medium text-indigo-600">
+                      <td className="py-4 px-3 sm:px-4 text-sm font-medium text-indigo-600">
                         #{customer.id}
                       </td>
-                      <td className="py-4 px-4">
+                      <td className="py-4 px-3 sm:px-4">
                         <div>
                           <div className="text-sm font-medium text-slate-800">{customer.name}</div>
                           <div className="text-xs text-slate-500">{customer.phone}</div>
                         </div>
                       </td>
-                      <td className="py-4 px-4">
+                      <td className="py-4 px-3 sm:px-4">
                         <div className="text-sm font-medium text-slate-800">{customer.dateJoined}</div>
                       </td>
-                      <td className="py-4 px-4">
+                      <td className="py-4 px-3 sm:px-4">
                         <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${getStatusStyles(customer.status)}`}>
                           {customer.status}
                         </span>
                       </td>
-                      <td className="py-4 px-4">
+                      <td className="py-4 px-3 sm:px-4">
                         <div className="text-sm font-medium text-slate-800">{customer.address}</div>
                       </td>
-                      <td className="py-4 px-4 text-sm font-semibold text-slate-700">
+                      <td className="py-4 px-3 sm:px-4 text-sm font-semibold text-slate-700">
                         {customer.bottlesAtHome}
                       </td>
-                      <td className="py-4 px-4 text-sm font-semibold text-red-600">
+                      <td className="py-4 px-3 sm:px-4 text-sm font-semibold text-red-600">
                         Rs {customer.paymentPending.toLocaleString()}
                       </td>
-                      <td className="py-4 px-4">
+                      <td className="py-4 px-3 sm:px-4">
                         <div className="flex items-center gap-1 flex-wrap">
                           <button 
                             className="inline-flex items-center gap-1 px-2 py-1.5 bg-indigo-600 text-white text-xs font-medium rounded-md hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all duration-200 shadow-sm hover:shadow-lg whitespace-nowrap"
@@ -375,7 +364,7 @@ const Customers = () => {
                             }`}
                             onClick={() => handleToggleStatus(customer.id)}
                           >
-                            {customer.status === 'Active' ? 'Suspend' : 'Approve'}
+                            {customer.status === 'Active' ? 'Reject' : 'Approve'}
                           </button>
                         </div>
                       </td>
@@ -384,50 +373,109 @@ const Customers = () => {
                 </tbody>
               </table>
             </div>
+          </div>
+        )}
 
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="flex justify-between items-center p-4 border-t border-slate-100 bg-slate-50">
-                <div className="text-sm text-slate-500">
-                  Showing {startIndex + 1}-{Math.min(startIndex + itemsPerPage, filteredCustomers.length)} of {filteredCustomers.length} customers
+        {/* Customers Cards - Mobile */}
+        {filteredCustomers.length > 0 && (
+          <div className="sm:hidden space-y-4">
+            {paginatedCustomers.map((customer) => (
+              <div key={customer.id} className="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+                <div className="flex justify-between items-start mb-3">
+                  <div>
+                    <div className="text-sm font-bold text-indigo-600">#{customer.id}</div>
+                    <div className="text-base font-semibold text-slate-800">{customer.name}</div>
+                    <div className="text-xs text-slate-500">{customer.phone}</div>
+                  </div>
+                  <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${getStatusStyles(customer.status)}`}>
+                    {customer.status}
+                  </span>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <button
-                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                    disabled={currentPage === 1}
-                    className="inline-flex items-center px-3 py-2 border border-slate-300 bg-white text-sm font-medium text-slate-500 rounded-md hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                    Prev
-                  </button>
-                  
-                  <div className="flex items-center space-x-1">
-                    {[...Array(totalPages)].map((_, i) => (
-                      <button
-                        key={i + 1}
-                        onClick={() => setCurrentPage(i + 1)}
-                        className={`px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 ${
-                          currentPage === i + 1
-                            ? 'bg-indigo-600 text-white shadow-sm'
-                            : 'text-slate-500 hover:bg-slate-100'
-                        }`}
-                      >
-                        {i + 1}
-                      </button>
-                    ))}
-                  </div>
 
-                  <button
-                    onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                    disabled={currentPage === totalPages}
-                    className="inline-flex items-center px-3 py-2 border border-slate-300 bg-white text-sm font-medium text-slate-500 rounded-md hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Next
-                    <ChevronRight className="h-4 w-4" />
-                  </button>
+                <div className="space-y-2 mb-4 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-slate-600">Date Joined:</span>
+                    <span className="font-medium text-slate-800">{customer.dateJoined}</span>
                   </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-600">Address:</span>
+                    <span className="font-medium text-slate-800 text-right">{customer.address}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-600">Bottles:</span>
+                    <span className="font-semibold text-slate-700">{customer.bottlesAtHome}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-600">Payment:</span>
+                    <span className="font-semibold text-red-600">Rs {customer.paymentPending.toLocaleString()}</span>
+                  </div>
+                </div>
+
+                <div className="flex gap-2">
+                  <button 
+                    className="flex-1 inline-flex items-center justify-center gap-1 px-3 py-2 bg-indigo-600 text-white text-xs font-medium rounded-md hover:bg-indigo-700 transition-all duration-200 shadow-sm"
+                    onClick={() => handleViewDetails(customer.id)}
+                  >
+                    <Eye className="h-3 w-3" />
+                    <span>View</span>
+                  </button>
+                  <button 
+                    className={`flex-1 inline-flex items-center justify-center gap-1 px-3 py-2 text-white text-xs font-medium rounded-md transition-all duration-200 shadow-sm ${
+                      customer.status === 'Active' 
+                        ? 'bg-red-600 hover:bg-red-700' 
+                        : 'bg-green-600 hover:bg-green-700'
+                    }`}
+                    onClick={() => handleToggleStatus(customer.id)}
+                  >
+                    {customer.status === 'Active' ? 'Reject' : 'Approve'}
+                  </button>
+                </div>
               </div>
-            )}
+            ))}
+          </div>
+        )}
+
+        {/* Pagination */}
+        {filteredCustomers.length > 0 && totalPages > 1 && (
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 p-4 sm:p-6 border-t border-slate-100 bg-slate-50 rounded-b-xl mt-0 -mx-4 sm:-mx-6 sm:mt-0">
+            <div className="text-xs sm:text-sm text-slate-500 text-center sm:text-left">
+              Showing {startIndex + 1}-{Math.min(startIndex + itemsPerPage, filteredCustomers.length)} of {filteredCustomers.length} customers
+            </div>
+            <div className="flex items-center space-x-2 flex-wrap justify-center">
+              <button
+                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                disabled={currentPage === 1}
+                className="inline-flex items-center px-2 sm:px-3 py-2 border border-slate-300 bg-white text-xs sm:text-sm font-medium text-slate-500 rounded-md hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <ChevronLeft className="h-4 w-4" />
+                <span className="hidden sm:inline">Prev</span>
+              </button>
+              
+              <div className="flex items-center space-x-1">
+                {[...Array(totalPages)].map((_, i) => (
+                  <button
+                    key={i + 1}
+                    onClick={() => setCurrentPage(i + 1)}
+                    className={`px-2 sm:px-3 py-2 text-xs sm:text-sm font-medium rounded-md transition-colors duration-200 ${
+                      currentPage === i + 1
+                        ? 'bg-indigo-600 text-white shadow-sm'
+                        : 'text-slate-500 hover:bg-slate-100'
+                    }`}
+                  >
+                    {i + 1}
+                  </button>
+                ))}
+              </div>
+
+              <button
+                onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                disabled={currentPage === totalPages}
+                className="inline-flex items-center px-2 sm:px-3 py-2 border border-slate-300 bg-white text-xs sm:text-sm font-medium text-slate-500 rounded-md hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <span className="hidden sm:inline">Next</span>
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
           </div>
         )}
       </div>
